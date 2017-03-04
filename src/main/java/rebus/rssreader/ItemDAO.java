@@ -95,6 +95,10 @@ public class ItemDAO {
         return db.delete(TABLE_NAME, where , null) > 0;
     }
 
+    public boolean deleteAll(){
+        return db.delete(TABLE_NAME, null , null) > 0;
+    }
+
     // 讀取所有記事資料
     public List<Item> getAll() {
         List<Item> result = new ArrayList<Item>();

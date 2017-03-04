@@ -1,6 +1,7 @@
 package rebus.rssreader;
 
 import java.util.ArrayList;
+import java.net.URL;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -17,6 +18,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class Main extends Activity {
@@ -24,24 +26,37 @@ public class Main extends Activity {
 	private ArrayList<String> title;
 	private ArrayList<String> description;
 	private ArrayList<String> url;
+    private URL urlo;
 	private ArrayList<String> data;
 	private ProgressDialog loading;
-
-	private String feed_rss = "http://www.cwb.gov.tw/rss/forecast/36_08.xml";
+    private TextView dailyQuote_tv;
+	private String weather_feed_rss = "http://www.cwb.gov.tw/rss/forecast/36_08.xml";
 	private ListView list;
     private ItemDAO itemDAO;
+    private ItemAdapter adapter;
+    private Thread dqThread;
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.main);
-		list = (ListView) findViewById(R.id.listView1);
-		ParsingRSS parsingFeed = new ParsingRSS();
+        dailyQuote_tv = (TextView) findViewById(R.id.dailyQuote_testView);
+
+		list = (ListView) findViewById(R.id.item_listView);
+		ParsingRSS parsingFeed = new ParsingRSS(weather_feed_rss);
 		parsingFeed.execute("");
         itemDAO = new ItemDAO(getApplicationContext());
+        dqThread = new Thread(r0);
+        dqThread.start();
 	}
 
 	private class ParsingRSS extends AsyncTask<String,String,String> {
-		@Override
+        String feed_rss;
+        public ParsingRSS(String rss) {
+            super();
+            this.feed_rss =rss;
+        }
+
+        @Override
 		protected void onPreExecute()
 		{
 			loading = new ProgressDialog(Main.this);
@@ -105,7 +120,7 @@ public class Main extends Activity {
                     item = new Item(i,itemString[1],itemString[2],itemString[3]+itemString[4]+itemString[5],itemString[6]);
                 itemDAO.insert(item);
             }
-            final ItemAdapter adapter = new ItemAdapter(Main.this, R.layout.singleitem, itemDAO.getAll());
+            adapter = new ItemAdapter(Main.this, R.layout.singleitem, itemDAO.getAll());
             list.setAdapter(adapter);
 			list.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
 				public boolean onItemLongClick(AdapterView<?> parent, View view,
@@ -122,6 +137,29 @@ public class Main extends Activity {
 		}
 	}
 
+    private Runnable r0=new Runnable(){
+        public void run(){
+            try {
+                urlo = new URL("http://www.appledaily.com.tw/index/dailyquote/");
+                Document doc =  Jsoup.parse(urlo, 3000);
+                Elements article = doc.select("article[class=dphs]");
+                final Elements p_select=article.get(0).select("p");
+                runOnUiThread(new Runnable() {
+                        public void run(){
+                            dailyQuote_tv.setText(p_select.get(0).text());
+                            dailyQuote_tv.setSelected(true);
+                            dailyQuote_tv.requestFocus();
+                        }
+                });
+                    Thread.sleep(100);
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+    };
+
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.main, menu);
@@ -133,7 +171,9 @@ public class Main extends Activity {
 		switch(item.getItemId())
 		{
 		case R.id.reload:
-			ParsingRSS parsingFeed = new ParsingRSS();
+            itemDAO.deleteAll();
+            adapter.ClearItemList();
+			ParsingRSS parsingFeed = new ParsingRSS(weather_feed_rss);
 			parsingFeed.execute("");
 			return true;
 		}
