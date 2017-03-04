@@ -1,13 +1,5 @@
 package rebus.rssreader;
 
-import java.util.ArrayList;
-import java.net.URL;
-
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
-
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.os.AsyncTask;
@@ -21,12 +13,19 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
+
+import java.net.URL;
+import java.util.ArrayList;
+
 public class Main extends Activity {
 
 	private ArrayList<String> title;
 	private ArrayList<String> description;
 	private ArrayList<String> url;
-    private URL urlo;
 	private ArrayList<String> data;
 	private ProgressDialog loading;
     private TextView dailyQuote_tv;
@@ -34,7 +33,6 @@ public class Main extends Activity {
 	private ListView list;
     private ItemDAO itemDAO;
     private ItemAdapter adapter;
-    private Thread dqThread;
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -45,13 +43,13 @@ public class Main extends Activity {
 		ParsingRSS parsingFeed = new ParsingRSS(weather_feed_rss);
 		parsingFeed.execute("");
         itemDAO = new ItemDAO(getApplicationContext());
-        dqThread = new Thread(r0);
+        Thread dqThread = new Thread(r0);
         dqThread.start();
 	}
 
 	private class ParsingRSS extends AsyncTask<String,String,String> {
         String feed_rss;
-        public ParsingRSS(String rss) {
+        private ParsingRSS(String rss) {
             super();
             this.feed_rss =rss;
         }
@@ -140,8 +138,8 @@ public class Main extends Activity {
     private Runnable r0=new Runnable(){
         public void run(){
             try {
-                urlo = new URL("http://www.appledaily.com.tw/index/dailyquote/");
-                Document doc =  Jsoup.parse(urlo, 3000);
+                URL url = new URL("http://www.appledaily.com.tw/index/dailyquote/");
+                Document doc =  Jsoup.parse(url, 3000);
                 Elements article = doc.select("article[class=dphs]");
                 final Elements p_select=article.get(0).select("p");
                 runOnUiThread(new Runnable() {

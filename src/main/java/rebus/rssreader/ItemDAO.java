@@ -1,11 +1,12 @@
 package rebus.rssreader;
-import java.util.ArrayList;
-import java.util.List;
 
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+
+import java.util.ArrayList;
+import java.util.List;
 /**
  * Created by d-eye on 2017/3/3.
  */
@@ -20,7 +21,7 @@ public class ItemDAO {
     private static final String DATE_COLUMN = "date";
     private static final String DAYNIGHT_COLUMN = "daynight";
     private static final String TEMPERATURE_COLUMN = "temperature";
-    private static final String WEATHER_COLUMN = "wheather";
+    private static final String WEATHER_COLUMN = "weather";
 
     // 使用上面宣告的變數建立表格的SQL指令
     public static final String CREATE_TABLE =
