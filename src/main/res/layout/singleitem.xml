@@ -5,32 +5,28 @@
     >
 
     <TextView
-        android:text="1"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:id="@+id/date_textView"
-        android:layout_weight="1"
+        android:layout_weight="0.5"
         android:layout_gravity="center"/>
 
     <TextView
-        android:text="2"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:id="@+id/daynight_textView"
-        android:layout_weight="1"
+        android:layout_weight="0.5"
         android:layout_gravity="center"/>
 
     <TextView
-        android:text="3"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:id="@+id/temperature_textView"
         android:layout_weight="1"
         android:layout_gravity="center"/>
 
     <TextView
-        android:text="4"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:id="@+id/weather_textView"
         android:layout_weight="1"
