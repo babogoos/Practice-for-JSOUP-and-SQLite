@@ -1,0 +1,10 @@
+<resources>
+
+    <string name="app_name">RSS Reader</string>
+    <string name="reload">Reload</string>
+    <string name="loading">Loading&#8230;</string>
+    <string name="share">Share</string>
+    <string name="browser">Browser</string>
+    <string name="error">No connection!</string>
+
+</resources>

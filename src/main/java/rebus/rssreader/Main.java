@@ -8,21 +8,14 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.webkit.WebView;
 import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -32,12 +25,11 @@ public class Main extends Activity {
 	private ArrayList<String> description;
 	private ArrayList<String> url;
 	private ArrayList<String> data;
-
 	private ProgressDialog loading;
-	
+
 	private String feed_rss = "http://www.cwb.gov.tw/rss/forecast/36_08.xml";
 	private ListView list;
-
+    private ItemDAO itemDAO;
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -45,10 +37,10 @@ public class Main extends Activity {
 		list = (ListView) findViewById(R.id.listView1);
 		ParsingRSS parsingFeed = new ParsingRSS();
 		parsingFeed.execute("");
+        itemDAO = new ItemDAO(getApplicationContext());
 	}
 
 	private class ParsingRSS extends AsyncTask<String,String,String> {
-
 		@Override
 		protected void onPreExecute()
 		{
@@ -103,36 +95,28 @@ public class Main extends Activity {
     			    	toast.show();
 				finish();
 			}
-			String[] list_title = title.toArray(new String[title.size()]);
-			ArrayAdapter<String> adapter = new ArrayAdapter<String>(Main.this, android.R.layout.simple_list_item_1, list_title);
-			list.setAdapter(adapter);
-			list.setOnItemClickListener(new OnItemClickListener() {
-				public void onItemClick(AdapterView<?> parent, View view,
+            String[] list_item = description.get(0).split("<BR>");
+            for (int i = 0; i < list_item.length; i++) {
+                String[] itemString = list_item[i].split(" ");
+                Item item;
+                if(i==0)
+                    item = new Item(i,itemString[0],itemString[1],itemString[2]+itemString[3]+itemString[4],itemString[5]);
+                else
+                    item = new Item(i,itemString[1],itemString[2],itemString[3]+itemString[4]+itemString[5],itemString[6]);
+                itemDAO.insert(item);
+            }
+            final ItemAdapter adapter = new ItemAdapter(Main.this, R.layout.singleitem, itemDAO.getAll());
+            list.setAdapter(adapter);
+			list.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
+				public boolean onItemLongClick(AdapterView<?> parent, View view,
 						final int pos, long id) {
-					String article = data.get(pos) + "<br><br>" + description.get(pos);
-					AlertDialog.Builder details = new AlertDialog.Builder(Main.this);
-					details.setTitle(title.get(pos));
-					WebView webview = new WebView(Main.this);
-					webview.loadData(article, "text/html; charset=UTF-8", "UTF-8");
-					details.setView(webview);
-					details.setNegativeButton(getResources().getText(R.string.share), new DialogInterface.OnClickListener() {
-					    @Override
-					    public void onClick(DialogInterface dialog, int id) {
-					    	Intent i=new Intent(android.content.Intent.ACTION_SEND);
-							i.setType("text/plain");
-							i.putExtra(android.content.Intent.EXTRA_TEXT, title.get(pos) + "\n\n" + url.get(pos));
-							startActivity(Intent.createChooser(i,getResources().getText(R.string.share)));
-					    }
-					});
-					details.setPositiveButton(getResources().getText(R.string.browser), new DialogInterface.OnClickListener() {
-					    @Override
-					    public void onClick(DialogInterface dialog, int id) {
-					    	Intent openBrowser = new Intent(Intent.ACTION_VIEW);
-					    	openBrowser.setData(Uri.parse(url.get(pos)));
-							Main.this.startActivity(openBrowser);
-					    }
-					});
-					details.show();
+                    itemDAO.delete(adapter.get(pos).getId());
+                    adapter.updateItemList(itemDAO.getAll());
+                    Toast toast = Toast.makeText(Main.this,
+                            "Deleted",
+                            Toast.LENGTH_SHORT);
+                    toast.show();
+                    return true;
 				}
 			});
 		}
@@ -148,7 +132,7 @@ public class Main extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch(item.getItemId())
 		{
-		case R.id.refresh:
+		case R.id.reload:
 			ParsingRSS parsingFeed = new ParsingRSS();
 			parsingFeed.execute("");
 			return true;
